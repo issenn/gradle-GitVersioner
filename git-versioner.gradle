@@ -97,19 +97,21 @@ def GitVersion generateVersionName() {
             size()
     boolean hasLocalChanges = localChangesCount > 0
 
-
-
-    def diffToDefault = "git rev-list $defaultBranch..".execute([], rootDir)
+    def diffToDefault = "git rev-list --no-merges $defaultBranch..".execute([], rootDir)
     diffToDefault.waitFor()
     if (diffToDefault.exitValue() != 0) {
-        diffToDefault = "git rev-list origin/$defaultBranch..".execute([], rootDir)
+        diffToDefault = "git rev-list --no-merges origin/$defaultBranch..".execute([], rootDir)
     }
     def featurelines = diffToDefault.text.trim().readLines()
+    println(featurelines)
     def commitsInFeatureBranch = featurelines.size();
 
-    def defaultAndFeatureLines = "git rev-list $currentCommit"
+    def defaultAndFeatureLines = "git rev-list --no-merges $currentCommit"
             .execute([], rootDir).text.trim().readLines()
 
+    println(defaultAndFeatureLines)
+    println('-----')
+    println(featurelines)
     // the sha1 of the latest commit in the default branch
     def lastestDefaultBranchCommitSha1 = defaultAndFeatureLines.size() == 1 ?
             defaultAndFeatureLines.first() : {
@@ -120,6 +122,7 @@ def GitVersion generateVersionName() {
             return currentCommit
         }
     }()
+    println(lastestDefaultBranchCommitSha1)
 
     // get additional information
     def defaultBranchDatesLog = "git log $lastestDefaultBranchCommitSha1 --pretty=format:'%at' -n 1"
@@ -128,7 +131,7 @@ def GitVersion generateVersionName() {
             initialCommitDate
 
     // commit count is the first part of the version
-    def defautBranchCommitCount = "git rev-list $lastestDefaultBranchCommitSha1 --count"
+    def defautBranchCommitCount = "git rev-list --no-merges $lastestDefaultBranchCommitSha1 --count"
             .execute([], rootDir).text.trim()
     def commitCount = defautBranchCommitCount.isInteger() ? defautBranchCommitCount.toInteger() : 0
 
@@ -217,3 +220,48 @@ def String getTinyBranchName(String originalName, int length) {
     }
     return result
 }
+
+/*
+def String checkoutCommit(String parrentCommit, String childrenCommit) {
+    // 子分支相对于父分支新增的提交历史
+    def diffToParrentCommit = "git rev-list $parrentCommit..$childrenCommit".execute([], rootDir)
+    diffToParrentCommit.waitFor()
+    if (diffToParrentCommit.exitValue() != 0) {
+        diffToParrentCommit = "git rev-list origin/$parrentCommit..$childrenCommit".execute([], rootDir)
+    }
+
+    def featurelines = diffToParrentCommit.text.trim().readLines()
+
+    // 子分支提交历史 = 父分支提交历史 + 子分支新增提交历史
+    def parrentAndFeatureLines = "git rev-list $childrenCommit"
+            .execute([], rootDir).text.trim().readLines()
+
+    // 子分支筛除新增提交历史 = 父分支部分提交历史，获取关联的父分支提交sha1
+    def branchCommitSha1 = parrentAndFeatureLines.size() == 1 ?
+            parrentAndFeatureLines.first() : {
+        try {
+            return parrentAndFeatureLines.findAll { !featurelines.contains(it) }.first()
+        } catch (NoSuchElementException e) {
+            // no commits found
+            return childrenCommit
+        }
+    }()
+}
+
+def String mergeCommit(String parrentCommit, String childrenCommit) {
+    childrenCommit = mergeCommit(parrentCommit, childrenCommit)
+    // 当前主干分支的父分支的提交历史，release、master
+    def parrentLines = "git rev-list origin/$parrentCommit"
+            .execute([], rootDir).text.trim().readLines()
+
+    // the sha1 of the latest commit in the default branch
+    def branchMergeSha1 = parrentLines.size() == 1 ?
+            parrentLines.first() : {
+        def tmpcommit = 0
+        for (def index = 0; index < aLines.size(); index++) {
+            tmpcommit = aLines[index] == tmpcommit ? aLines[index - 1] : tmpcommit
+        }
+        return tmpcommit
+    }()
+}
+*/
