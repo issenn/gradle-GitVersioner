@@ -104,6 +104,7 @@ def GitVersion generateVersionName() {
         diffToDefault = "git rev-list --no-merges origin/$defaultBranch..".execute([], rootDir)
     }
     def featurelines = diffToDefault.text.trim().readLines()
+    println(featurelines)
     def commitsInFeatureBranch = featurelines.size();
 
     def defaultAndFeatureLines = "git rev-list --no-merges $currentCommit"
