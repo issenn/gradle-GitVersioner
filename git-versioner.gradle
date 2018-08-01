@@ -183,6 +183,10 @@ def GitVersion generateVersionName() {
         if (localChangesCountEnabled && localChangesCount > 0) {
             result += "-($localChangesCount)"
         }
+        println('--#featureBranchCommits')
+        println(featureBranchCommits)
+        println('--#hasLocalChanges')
+        println(hasLocalChanges)
         if ((featureBranchCommits || hasLocalChanges) && snapshotEnabled) {
             result += "-SNAPSHOT"
         }
