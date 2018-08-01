@@ -88,6 +88,7 @@ def GitVersion generateVersionName() {
     if (stableBranches.contains(currentBranch)) {
         defaultBranch = currentBranch
     }
+
     def currentCommit = 'git rev-parse HEAD'.execute([], rootDir).text.trim()
 
     def log = "git log --pretty=format:'%at' --reverse".execute([], rootDir)
@@ -103,15 +104,11 @@ def GitVersion generateVersionName() {
         diffToDefault = "git rev-list --no-merges origin/$defaultBranch..".execute([], rootDir)
     }
     def featurelines = diffToDefault.text.trim().readLines()
-    println(featurelines)
     def commitsInFeatureBranch = featurelines.size();
 
     def defaultAndFeatureLines = "git rev-list --no-merges $currentCommit"
             .execute([], rootDir).text.trim().readLines()
 
-    println(defaultAndFeatureLines)
-    println('-----')
-    println(featurelines)
     // the sha1 of the latest commit in the default branch
     def lastestDefaultBranchCommitSha1 = defaultAndFeatureLines.size() == 1 ?
             defaultAndFeatureLines.first() : {
@@ -122,7 +119,6 @@ def GitVersion generateVersionName() {
             return currentCommit
         }
     }()
-    println(lastestDefaultBranchCommitSha1)
 
     // get additional information
     def defaultBranchDatesLog = "git log $lastestDefaultBranchCommitSha1 --pretty=format:'%at' -n 1"
@@ -139,7 +135,6 @@ def GitVersion generateVersionName() {
     def long YEAR_IN_SECONDS = 60 * 60 * 24 * 365
     def diff = latestCommitDate - initialCommitDate
 
-
     long time = {
         if (yearFactor <= 0) {
             return 0;
@@ -151,16 +146,14 @@ def GitVersion generateVersionName() {
     // this is the version
     def combinedVersion = commitCount + time
 
-    def snapshot = {
-        def result = ""
-        if (localChangesCountEnabled && localChangesCount > 0) {
-            result += "($localChangesCount)"
-        }
-        if (snapshotEnabled && hasLocalChanges) {
-            result += "-SNAPSHOT"
-        }
-        return result
-    }()
+    def currentTag = ""
+    def mostRecentTag = "git describe --abbrev=0 --tags".execute([], rootDir)
+    mostRecentTag.waitFor()
+    if (mostRecentTag.exitValue() == 0) {
+        currentTag = mostRecentTag.text.trim()
+    } else {
+        currentTag = "0.0.0"
+    }
 
     def holder = new GitVersion()
     holder.version = combinedVersion
@@ -170,23 +163,33 @@ def GitVersion generateVersionName() {
     holder.localChanges = localChangesCount
 
     String featureBranchCommits = commitsInFeatureBranch == 0 ? "" : commitsInFeatureBranch
-    if (featureBranchCommits.isEmpty()) {
-        // return only the version when on the default branch
-        holder.name = "$combinedVersion$snapshot"
-        return holder
-    }
 
     // on feature branches, add a branch identifier and the commit count
     def shortBranch = (shortNameClosure ?: {
         if (currentBranch.isEmpty()) {
-            return "${currentCommit.subSequence(0, 7)}-"
+            return "${currentCommit.subSequence(0, 7)}"
         } else {
             return getTinyBranchName(currentBranch, 2)
         }
     })(holder)
     holder.shortBranch = shortBranch
 
-    holder.name = "$combinedVersion-${shortBranch}$featureBranchCommits$snapshot"
+    def snapshot = {
+        def result = ""
+        if (featureBranchCommits) {
+            result += "-g${shortBranch}"
+            result += "[$featureBranchCommits]"
+        }
+        if (localChangesCountEnabled && localChangesCount > 0) {
+            result += "-($localChangesCount)"
+        }
+        if (snapshotEnabled) {
+            result += "-SNAPSHOT"
+        }
+        return result
+    }()
+
+    holder.name = "$currentTag$snapshot"
     return holder
 }
 
@@ -220,6 +223,8 @@ def String getTinyBranchName(String originalName, int length) {
     }
     return result
 }
+
+// git describe --abbrev=0 --tags --always
 
 /*
 def String checkoutCommit(String parrentCommit, String childrenCommit) {
