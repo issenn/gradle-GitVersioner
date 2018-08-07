@@ -145,9 +145,9 @@ def GitVersion generateVersionName() {
     }();
     println(commitCount)
     println(time)
-    println(combinedVersion)
     // this is the version
     def combinedVersion = commitCount + time
+    println(combinedVersion)
 
     def currentTag = ""
     def mostRecentTag = "git describe --abbrev=0 --tags".execute([], rootDir)
