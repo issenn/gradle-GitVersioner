@@ -143,7 +143,9 @@ def GitVersion generateVersionName() {
             return (diff * yearFactor / YEAR_IN_SECONDS + 0.5).intValue()
         }
     }();
-
+    println(commitCount)
+    println(time)
+    println(combinedVersion)
     // this is the version
     def combinedVersion = commitCount + time
 
