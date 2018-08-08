@@ -24,6 +24,10 @@ public class GitVersion {
 
     public String name;
 
+    public String versionName;
+
+    public String testVersion;
+
     public int version = 0;
 
     public String branchName;
@@ -104,7 +108,7 @@ def GitVersion generateVersionName() {
         diffToDefault = "git rev-list --no-merges origin/$defaultBranch..".execute([], rootDir)
     }
     def featurelines = diffToDefault.text.trim().readLines()
-    println(featurelines)
+    println("--#featurelines: ${featurelines}")
     def commitsInFeatureBranch = featurelines.size();
 
     def defaultAndFeatureLines = "git rev-list --no-merges $currentCommit"
@@ -143,11 +147,11 @@ def GitVersion generateVersionName() {
             return (diff * yearFactor / YEAR_IN_SECONDS + 0.5).intValue()
         }
     }();
-    println(commitCount)
-    println(time)
+    println("--#commitCount: ${commitCount}")
+    println("--#time: ${time}")
     // this is the version
     def combinedVersion = commitCount //+ time
-    println(combinedVersion)
+    println("--#combinedVersion: ${combinedVersion}")
 
     def currentTag = ""
     def mostRecentTag = "git describe --abbrev=0 --tags".execute([], rootDir)
@@ -186,10 +190,9 @@ def GitVersion generateVersionName() {
         if (localChangesCountEnabled && localChangesCount > 0) {
             result += "-($localChangesCount)"
         }
-        println('--#featureBranchCommits')
-        println(featureBranchCommits)
+        println('--#featureBranchCommits: ${featureBranchCommits}')
         println('--#hasLocalChanges')
-        println(hasLocalChanges)
+        println("--#hasLocalChanges: ${hasLocalChanges}")
         if ((featureBranchCommits || hasLocalChanges) && snapshotEnabled) {
             result += "-SNAPSHOT"
         }
