@@ -131,7 +131,7 @@ def GitVersion generateVersionName() {
             return currentCommit
         }
     }()
-    println("lastestDefaultBranchCommitSha1: ${lastestDefaultBranchCommitSha1}")
+    println("--#lastestDefaultBranchCommitSha1: ${lastestDefaultBranchCommitSha1}")
 
     // get additional information
     def defaultBranchDatesLog = "git log $lastestDefaultBranchCommitSha1 --pretty=format:'%at' -n 1"
