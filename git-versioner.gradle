@@ -146,7 +146,7 @@ def GitVersion generateVersionName() {
     println(commitCount)
     println(time)
     // this is the version
-    def combinedVersion = commitCount + time
+    def combinedVersion = commitCount //+ time
     println(combinedVersion)
 
     def currentTag = ""
@@ -165,7 +165,7 @@ def GitVersion generateVersionName() {
     holder.branchVersion = commitsInFeatureBranch
     holder.localChanges = localChangesCount
 
-    String featureBranchCommits = commitsInFeatureBranch == 0 ? "" : commitsInFeatureBranch
+    String featureBranchCommits = commitsInFeatureBranch == 0 ? "" : commitsInFeatureBranch.toString()
 
     // on feature branches, add a branch identifier and the commit count
     def shortBranch = (shortNameClosure ?: {
@@ -197,6 +197,8 @@ def GitVersion generateVersionName() {
     }()
 
     holder.name = "$currentTag$snapshot"
+    holder.versionName = "$currentTag".replaceAll('-.*', '').toString()
+    holder.testVersion = featureBranchCommits + ("$currentTag".replaceAll('(\\d\\.){2}\\d', '') ? ('-' + gitVersionName.replaceAll('(\\d\\.){2}\\d', '').toString()) : '')
     return holder
 }
 
