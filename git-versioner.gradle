@@ -93,7 +93,14 @@ def GitVersion generateVersionName() {
         defaultBranch = currentBranch
     }
 
+    def masterLines = "git rev-list origin/master".execute([], rootDir).text.trim().readLines()
     def currentCommit = 'git rev-parse HEAD'.execute([], rootDir).text.trim()
+
+    if (masterLines.contains(currentCommit)) {
+        defaultBranch = 'master'
+    }
+
+    println("--#defaultBranch: ${defaultBranch}")
 
     def log = "git log --pretty=format:'%at' --reverse".execute([], rootDir)
             .text.trim().readLines()
