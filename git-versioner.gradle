@@ -201,7 +201,7 @@ def GitVersion generateVersionName() {
 
     holder.name = "$currentTag$snapshot"
     holder.versionName = "$currentTag".replaceAll('-.*', '').toString()
-    holder.testVersion = featureBranchCommits + ("$currentTag".replaceAll('(\\d\\.){2}\\d', '') ? "$currentTag".replaceAll('(\\d\\.){2}\\d', '').toString() : '')
+    holder.testVersion = featureBranchCommits
     return holder
 }
 
