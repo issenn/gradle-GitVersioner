@@ -124,6 +124,7 @@ def GitVersion generateVersionName() {
             return currentCommit
         }
     }()
+    println("lastestDefaultBranchCommitSha1: ${lastestDefaultBranchCommitSha1}")
 
     // get additional information
     def defaultBranchDatesLog = "git log $lastestDefaultBranchCommitSha1 --pretty=format:'%at' -n 1"
@@ -190,8 +191,7 @@ def GitVersion generateVersionName() {
         if (localChangesCountEnabled && localChangesCount > 0) {
             result += "-($localChangesCount)"
         }
-        println('--#featureBranchCommits: ${featureBranchCommits}')
-        println('--#hasLocalChanges')
+        println("--#featureBranchCommits: ${featureBranchCommits}")
         println("--#hasLocalChanges: ${hasLocalChanges}")
         if ((featureBranchCommits || hasLocalChanges) && snapshotEnabled) {
             result += "-SNAPSHOT"
@@ -201,7 +201,7 @@ def GitVersion generateVersionName() {
 
     holder.name = "$currentTag$snapshot"
     holder.versionName = "$currentTag".replaceAll('-.*', '').toString()
-    holder.testVersion = featureBranchCommits + ("$currentTag".replaceAll('(\\d\\.){2}\\d', '') ? ('-' + "$currentTag".replaceAll('(\\d\\.){2}\\d', '').toString()) : '')
+    holder.testVersion = featureBranchCommits + ("$currentTag".replaceAll('(\\d\\.){2}\\d', '') ? "$currentTag".replaceAll('(\\d\\.){2}\\d', '').toString() : '')
     return holder
 }
 
