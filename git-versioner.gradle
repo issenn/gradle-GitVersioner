@@ -109,16 +109,16 @@ def GitVersion generateVersionName() {
             size()
     boolean hasLocalChanges = localChangesCount > 0
 
-    def diffToDefault = "git rev-list --no-merges $defaultBranch..".execute([], rootDir)
+    def diffToDefault = "git rev-list $defaultBranch..".execute([], rootDir)
     diffToDefault.waitFor()
     if (diffToDefault.exitValue() != 0) {
-        diffToDefault = "git rev-list --no-merges origin/$defaultBranch..".execute([], rootDir)
+        diffToDefault = "git rev-list origin/$defaultBranch..".execute([], rootDir)
     }
     def featurelines = diffToDefault.text.trim().readLines()
     println("--#featurelines: ${featurelines}")
     def commitsInFeatureBranch = featurelines.size();
 
-    def defaultAndFeatureLines = "git rev-list --no-merges $currentCommit"
+    def defaultAndFeatureLines = "git rev-list $currentCommit"
             .execute([], rootDir).text.trim().readLines()
 
     // the sha1 of the latest commit in the default branch
@@ -140,7 +140,7 @@ def GitVersion generateVersionName() {
             initialCommitDate
 
     // commit count is the first part of the version
-    def defautBranchCommitCount = "git rev-list --no-merges $lastestDefaultBranchCommitSha1 --count"
+    def defautBranchCommitCount = "git rev-list $lastestDefaultBranchCommitSha1 --count"
             .execute([], rootDir).text.trim()
     def commitCount = defautBranchCommitCount.isInteger() ? defautBranchCommitCount.toInteger() : 0
 
